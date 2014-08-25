@@ -1,0 +1,6 @@
+[
+  { "git": "http://github.com/hassox/google-protos.git" },
+  { "git": "http://github.com/hassox/fender.git" },
+  { "git": "http://github.com/hassox/public-protos.git" },
+  { "local": "./" }
+]

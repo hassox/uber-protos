@@ -1,0 +1,195 @@
+package uber.v1;
+
+import "fender/v1.proto";
+import "fender/v1/field_options.proto";
+import "uber/v1/models.proto";
+
+/**
+ * The Products endpoint returns information about the Uber products offered at a given location.
+ * The response includes the display name and other details about each product, and lists the products in the proper display order.
+ *
+ * Requires OAUTH
+ */
+message GetProductsRequest {
+  /** Latitude component of location. */
+  optional float latitude = 1 [(fender.v1.fender_field).present = true];
+
+  /** Longitude component of location. */
+  optional float longitude = 2 [(fender.v1.fender_field).present = true];
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+/**
+ * The Price Estimates endpoint returns an estimated price range for each product offered at a given location.
+ * The price estimate is provided as a formatted string with the full price range and the localized currency symbol.
+ *
+ * The response also includes low and high estimates, and the ISO 4217 currency code for situations requiring currency conversion.
+ * When surge is active for a particular product, its surge_multiplier will be greater than 1, but the price estimate already factors in this multiplier.
+ */
+message GetPriceEstimatesRequest {
+  /** Latitude component of start location. */
+  optional float start_latitude = 1 [(fender.v1.fender_field).present = true];
+
+  /** Longitude component of start location. */
+  optional float start_longitude = 2 [(fender.v1.fender_field).present = true];
+
+  /** Latitude component of end location. */
+  optional float end_latitude = 3 [(fender.v1.fender_field).present = true];
+
+  /** Longitude component of end location. */
+  optional float end_longitude = 4 [(fender.v1.fender_field).present = true];
+}
+
+message GetPriceEstimatesResponse {
+  repeated PriceEstimate prices = 1;
+}
+
+
+/** 
+ * The Time Estimates endpoint returns ETAs for all products offered at a given location, with the responses expressed as integers in seconds.
+ * We recommend that this endpoint be called every minute to provide the most accurate, up-to-date ETAs.
+ */
+message GetTimeEstimatesRequest {
+  /** Latitude component. */
+  optional float start_latitude = 1 [(fender.v1.fender_field).present = true];
+
+  /** Longitude component. */
+  optional float start_longitude = 2 [(fender.v1.fender_field).present = true];
+
+  /** Unique customer identifier to be used for experience customization. */
+  optional string customer_uuid = 3;
+
+  /** Unique identifier representing a specific product for a given latitude & longitude. */
+  optional string product_id = 4;
+}
+
+message GetTimeEstimatesResponse {
+  optional TimeEstimate times = 1;
+}
+
+/**
+ * USER ACTIVITY
+ *
+ * The User Activity endpoint returns data about a user's lifetime activity with Uber.
+ * The response will include pickup locations and times, dropoff locations and times, the distance of past requests, and information about which products were requested.
+ *
+ * The history array in the response will have a maximum length based on the limit parameter.
+ * The response value count may exceed limit, therefore subsequent API requests may be necessary.
+ */
+message GetUserActivityRequest {
+  /**
+   * Offset the list of returned results by this amount. Default is zero.
+   */
+  optional uint32 offset = 1 [ default = 0 ];
+
+  /** 
+   * Number of items to retrieve.
+   */
+  optional uint32 limit = 2 [
+    default = 5,
+    (fender.v1.fender_field) = { max: 100, min: 1 }
+  ];
+}
+
+message GetUserActivityResponse {
+  /** Position in pagination. */
+  optional int32 offset = 1;
+
+  /** Number of items to retrieve (100 max). */
+  optional uint32 limit = 2;
+
+  /** Total number of items available. */
+  optional uint32 count = 3;
+
+  /** Information about the items history */
+  optional History history = 4;
+}
+
+/**
+ * USER PROFILE
+ *
+ * The User Profile endpoint returns information about the Uber user that has authorized with the application.
+ */
+message GetUserProfileRequest {}
+
+message GetUserProfileResponse {
+  optional UserProfile user = 1;
+}
+
+service UberService {
+  option (fender.v1.fender_service) = {
+    address: "https://api.uber.com",
+    request_format: JSON
+  };
+
+  /** 
+   * The Products endpoint returns information about the Uber products offered at a given location.
+   * The response includes the display name and other details about each product, and lists the products in the proper display order.
+   *
+   * Requires OAUTH
+   */
+  rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {
+    option (fender.v1.fender_method) = {
+      http_method: GET,
+      http_path: "/v1/products"
+    };
+  }
+
+  /**
+   * The Price Estimates endpoint returns an estimated price range for each product offered at a given location.
+   * The price estimate is provided as a formatted string with the full price range and the localized currency symbol.
+   *
+   * The response also includes low and high estimates, and the ISO 4217 currency code for situations requiring currency conversion.
+   * When surge is active for a particular product, its surge_multiplier will be greater than 1, but the price estimate already factors in this multiplier.
+   */
+  rpc GetPriceEstimates (GetPriceEstimatesRequest) returns (GetPriceEstimatesResponse) {
+    option (fender.v1.fender_method) = {
+      http_method: GET,
+      http_path: "/v1/estimates/price"
+    };
+  }
+
+
+  /** 
+   * The Time Estimates endpoint returns ETAs for all products offered at a given location, with the responses expressed as integers in seconds.
+   * We recommend that this endpoint be called every minute to provide the most accurate, up-to-date ETAs.
+   */
+  rpc GetTimeEstimates (GetTimeEstimatesRequest) returns (GetTimeEstimatesResponse) {
+    option (fender.v1.fender_method) = {
+      http_method: GET,
+      http_path: "/v1/estimates/time"
+    };
+  }
+
+  /** 
+   * USER ACTIVITY
+   *
+   * The User Activity endpoint returns data about a user's lifetime activity with Uber.
+   * The response will include pickup locations and times, dropoff locations and times, the distance of past requests, and information about which products were requested.
+   * 
+   * The history array in the response will have a maximum length based on the limit parameter.
+   * The response value count may exceed limit, therefore subsequent API requests may be necessary.
+   */
+  rpc UserActivity (GetUserActivityRequest) returns (GetUserActivityResponse) {
+    option (fender.v1.fender_method) = {
+      http_method: GET,
+      http_path: "/v1/history"
+    };
+  }
+
+  /** 
+   * USER PROFILE
+   *
+   * The User Profile endpoint returns information about the Uber user that has authorized with the application.
+   */
+  rpc UserProfile (GetUserProfileRequest) returns (GetUserProfileResponse) {
+    option (fender.v1.fender_method) = {
+      http_method: GET,
+      http_path: "/v1/me",
+      response_body_field: { name: "user" }
+    };
+  }
+}

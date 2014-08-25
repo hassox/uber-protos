@@ -1,0 +1,146 @@
+package uber.v1;
+
+import "fender/v1/field_options.proto";
+import "public/international/currency.proto";
+
+/** An Uber product in a location */
+message Product {
+  /**
+   * Unique identifier representing a specific product for a given latitude & longitude.
+   * For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles.
+   */
+  optional string product_id = 1;
+
+  /** Description of product. */
+  optional string description = 2;
+
+  /** Display name of product. */
+  optional string display_name = 3;
+
+  /** Capacity of product. For example, 4 people. */
+  optional uint32 capacity = 4;
+
+  /** Image URL representing the product. */
+  optional string image = 5;
+}
+
+/** Price estimates for a ride */
+message PriceEstimate {
+  /** 
+   * Unique identifier representing a specific product for a given latitude & longitude. 
+   * For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles. 
+   */
+  optional string product_id = 1;
+
+  /**
+   * ISO 4217 currency code. 
+   */
+  optional public.international.CurrencyCode currency_code = 2;
+
+
+  /**
+   * Display name of product.
+   */
+  optional string display_name = 3;
+
+  /**
+   * Formatted string of estimate in local currency of the start location. Estimate could be a range, a single number (flat rate) or "Metered" for TAXI.
+   */
+  optional string estimate = 4;
+
+  /**
+   * Lower bound of the estimated price.
+   */
+  optional int32 low_estimate = 5;
+
+  /**
+   * Upper bound of the estimated price.
+   */
+  optional int32 high_estimate = 6;
+
+  /**
+   * Expected surge multiplier.
+   * Surge is active if surge_multiplier is greater than 1.
+   * Price estimate already factors in the surge multiplier.
+   */
+  optional float surge_multiplier = 7;
+}
+
+message TimeEstimate {
+  /**
+   * Unique identifier representing a specific product for a given latitude & longitude.
+   * For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles.
+   */
+  optional string product_id = 1;
+
+  /**
+   * Display name of product.
+   */
+  optional string display_name = 2;
+
+
+  /**
+   * ETA for the product (in seconds). Always show estimate in minutes.
+   */
+  optional int32 estimate = 3;
+}
+
+/**
+ * Information including the pickup location, dropoff location, request start time, request end time, and distance of requests (in miles), as well as the product type that was requested.
+ */
+message History {
+  /** Transaction id */
+  optional string uuid = 1;
+
+  /** Time the ride was requested in seconds since the Unix epoch in UTC */
+  optional uint32 request_time = 2;
+
+  /** The id of the product that was used */
+  optional string product_id = 3;
+
+  /** The state of the transaction */
+  optional string state = 4;
+
+  /** Distance in miles */
+  optional float distance = 5;
+
+  /** Time the ride was started in seconds since the Unix epoch in UTC */
+  optional uint32 start_time = 6;
+
+  /** Location of ride start */
+  optional Location start_location = 7;
+
+  /** Time the ride was finished in seconds since the Unix epoch in UTC */
+  optional uint32 end_time = 8;
+
+  /** Location of ride end */
+  optional Location end_location = 9;
+}
+
+message Location {
+  /** A string representation of the street address */
+  optional string address = 1;
+
+  /** The latitude of the address */
+  optional float latitude = 2;
+
+  /** The longitude of the address */
+  optional float longitude = 3;
+}
+
+message UserProfile {
+  /** First name of the Uber user. */
+  optional string first_name = 1;
+
+  /** Last name of the Uber user. */
+  optional string last_name = 2;
+
+  /** Email address of the Uber user */
+  optional string email = 3;
+
+  /** Image URL of the Uber user. */
+  optional string picture = 4;
+
+  /** Promo code of the Uber user. */
+  optional string promo_code = 5;
+}
